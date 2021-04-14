@@ -5,13 +5,14 @@ public class Solution
     public static int GetPeakBunnyCapacity(int[] entrances, int[] exits, int[][] graph)
     {
         int peakCapacity = 0;
+        Graph convertedGraph = Convert2DArrayToGraph(graph);
         for(int i = 0; i < entrances.length; i++)
         {
             for(int j = 0; j < graph[entrances[i]].length; j++)
             {
                 if(graph[entrances[i]][j] > 0)
                 {
-                    BreadthFirstSearchMaximumCost(i, graph[entrances[i]][j], graph, exits);
+                    BreadthFirstSearchMaximumCost(i, graph[entrances[i]][j], convertedGraph, exits);
                 }
             }
         }
@@ -30,12 +31,20 @@ public class Solution
         }
         return result;
     }
-    private static int BreadthFirstSearchMaximumCost(int source, int startingCost, int[][] graph, int[] terminalNodes)
+    private static int BreadthFirstSearchMaximumCost(int source, int startingCost, Graph graph, int[] terminalNodes)
     {
         int endCost;
+
         endCost = modifiedBFS(graph, source, startingCost, terminalNodes);
-        return startingCost;
+        return endCost;
     }
+
+    private static Graph Convert2DArrayToGraph(int[][] graph)
+    {
+        for(int i = 0; i < graph.length;i+=)
+
+    }
+
     public static int modifiedBFS(Graph g, int src, int k, int[] terminalNodes)
     {
         // create a queue for doing BFS
@@ -84,61 +93,50 @@ public class Solution
 
         return maxCost;
     }
-    // A class to store a graph edge
-    static class Edge
-    {
-        public final int src, dest, weight;
-
-        private Edge(int src, int dest, int weight)
-        {
-            this.src = src;
-            this.dest = dest;
-            this.weight = weight;
-        }
-
-        // Factory method for creating an immutable instance of `Edge`
-        public static Edge of(int a, int b, int c) {
-            return new Edge(a, b, c);        // calls private constructor
-        }
-    }
-
-    // A BFS Node
-    static class Node
-    {
-        // current vertex number and cost of the current path
-        int vertex, weight;
-
-        // set of nodes visited so far in the current path
-        Set<Integer> s;
-
-        Node(int vertex, int weight, Set<Integer> s)
-        {
-            this.vertex = vertex;
-            this.weight = weight;
-            this.s = s;
-        }
-    }
-
-    // A class to represent a graph object
     static class Graph
     {
-        // A list of lists to represent an adjacency list
-        List<List<Edge>> adj = new ArrayList<>();
-
-        // Graph Constructor
-        public Graph(List<Edge> edges, int N)
+        private Map<Vertex, List<Vertex>> adjVertices;
+        Graph(int[][] asIntArr)
         {
-            // resize the list to `N` elements of type `List<Edge>`
-            for (int i = 0; i < N; i++) {
-                adj.add(new ArrayList<>());
-            }
-
-            // add edges to the undirected graph
-            for (Edge e: edges)
+            for(int i = 0; i < asIntArr.length; i++)
             {
-                adj.get(e.src).add(Edge.of(e.src, e.dest, e.weight));
-                adj.get(e.dest).add(Edge.of(e.dest, e.src, e.weight));
+
             }
+        }
+        void addVertex(int room)
+        {
+            adjVertices.putIfAbsent(new Vertex(room), new ArrayList<>());
+        }
+
+        void removeVertex(int room) {
+            Vertex v = new Vertex(room);
+            adjVertices.values().stream().forEach(e -> e.remove(v));
+            adjVertices.remove(new Vertex(room));
+        }
+        void addEdge(int from, int to) {
+            Vertex v1 = new Vertex(from);
+            Vertex v2 = new Vertex(to);
+            adjVertices.get(v1).add(v2);
+        }
+        void removeEdge(int from, int to)
+        {
+            Vertex v1 = new Vertex(from);
+            Vertex v2 = new Vertex(to);
+            List<Vertex> eV1 = adjVertices.get(v1);
+            if (eV1 != null)
+                eV1.remove(v2);
+        }
+        List<Vertex> getAdjVertices(int room)
+        {
+            return adjVertices.get(new Vertex(room));
+        }
+    }
+    static class Vertex
+    {
+        int room;
+        Vertex(int roomNumber)
+        {
+            this.room = roomNumber;
         }
     }
 
