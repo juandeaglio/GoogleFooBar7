@@ -57,7 +57,7 @@ public class Solution
         vertices.add(trueSource);
         vertexArrayDeque.add(new Vertex(sourceNode));
         int maximumBunniesPossible = startingBunnies;
-
+        int maximumEdgeCost = 0;
         boolean terminal = false;
         while (!vertexArrayDeque.isEmpty()&& !terminal)
         {
@@ -65,9 +65,10 @@ public class Solution
 
             int v = node != null ? node.room : 0;
             vertices = new HashSet<>(v);
+
             for (Edge edge: graph.adjVertices.get(v).edges)
             {
-                maximumBunniesPossible = Math.min(maximumBunniesPossible, edge.cost);
+                maximumEdgeCost = Math.max(maximumEdgeCost, edge.cost);
                 if (!vertices.contains(edge.leadstoRoom))
                 {
                     //vertices = new HashSet<>(vertices);
@@ -75,6 +76,7 @@ public class Solution
                     vertexArrayDeque.add(new Vertex(edge.leadstoRoom));
                 }
             }
+            maximumBunniesPossible = Math.min(maximumBunniesPossible, maximumEdgeCost);
             terminal = IsNotTerminal(node,terminalNodes);
         }
 
