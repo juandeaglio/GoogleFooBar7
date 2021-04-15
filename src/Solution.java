@@ -1,11 +1,5 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayDeque;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
+
 public class Solution
 {
     public static int GetPeakBunnyCapacity(int[] entrances, int[] exits, int[][] graph)
@@ -50,11 +44,10 @@ public class Solution
 
     public static int BFSMaxPath(Graph graph, int sourceNode, int startingBunnies, int[] terminalNodes, int trueSource)
     {
-        Queue<Vertex> vertexArrayDeque = new ArrayDeque<>();
+        Deque<Vertex> vertexArrayDeque = new ArrayDeque<>();
 
-        Set<Integer> vertices = new HashSet<>();
-        vertices.add(sourceNode);
-        vertices.add(trueSource);
+        HashMap<Integer,HashSet<Integer>> vertices = new HashMap<>();
+        vertices.put(sourceNode, new HashSet<>(trueSource));
         vertexArrayDeque.add(new Vertex(sourceNode));
         int maximumBunniesPossible = startingBunnies;
         int maximumEdgeCost = 0;
@@ -63,18 +56,18 @@ public class Solution
         {
             Vertex node = vertexArrayDeque.poll();
 
-            int v = node != null ? node.room : 0;
-            vertices = new HashSet<>(v);
+            int nodeRoom = node != null ? node.room : 0;
 
-            for (Edge edge: graph.adjVertices.get(v).edges)
+            for (Edge edge: graph.adjVertices.get(nodeRoom).edges)
             {
-                maximumEdgeCost = Math.max(maximumEdgeCost, edge.cost);
-                if (!vertices.contains(edge.leadstoRoom))
+
+                if(vertices.get(nodeRoom) != null && !vertices.get(nodeRoom).contains(edge.leadstoRoom))
                 {
-                    //vertices = new HashSet<>(vertices);
-                    vertices.add(edge.leadstoRoom);
-                    vertexArrayDeque.add(new Vertex(edge.leadstoRoom));
+                    vertices.get(nodeRoom).add(edge.leadstoRoom);
+                    maximumEdgeCost = Math.max(maximumEdgeCost, edge.cost);
+                    vertexArrayDeque.addLast(new Vertex(edge.leadstoRoom));
                 }
+                else vertices.computeIfAbsent(nodeRoom, k -> new HashSet<>(edge.leadstoRoom));
             }
             maximumBunniesPossible = Math.min(maximumBunniesPossible, maximumEdgeCost);
             terminal = IsNotTerminal(node,terminalNodes);

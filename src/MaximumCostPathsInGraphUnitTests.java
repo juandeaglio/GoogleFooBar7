@@ -86,5 +86,24 @@ public class MaximumCostPathsInGraphUnitTests
         int actualExpectedTotal = Solution.GetPeakBunnyCapacity(entrances, exits, graph);
         Assertions.assertEquals(expectedTotalBunnies, actualExpectedTotal);
     }
+    @Test
+    public void GivenLargeGraphShouldFindMaximumCostPaths()
+    {
+        int[] entrances = {0,1};
+        int[] exits = {6,7};
+        int[][] graph = {
+                {0,0,8,10,0,0,0,0},
+                {0,0,10,8,0,0,0,0},
+                {11,9,0,0,7,8,0,0},
+                {8,11,0,0,7,6,0,0},
+                {0,0,0,0,0,0,13,12},
+                {0,0,0,0,0,0,15,12},
+                {0,0,0,0,0,0,0,0},
+                {0,0,0,0,0,0,0,0}
+        };
+        int expectedTotalBunnies = 8+8+8+8;
+        int actualExpectedTotal = Solution.GetPeakBunnyCapacity(entrances, exits, graph);
+        Assertions.assertEquals(expectedTotalBunnies, actualExpectedTotal);
+    }
 }
 
