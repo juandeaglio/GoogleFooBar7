@@ -1,5 +1,11 @@
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
 public class Solution
 {
     public static int GetPeakBunnyCapacity(int[] entrances, int[] exits, int[][] graph)
@@ -12,131 +18,115 @@ public class Solution
             {
                 if(graph[entrances[i]][j] > 0)
                 {
-                    BreadthFirstSearchMaximumCost(i, graph[entrances[i]][j], convertedGraph, exits);
+                    peakCapacity += BreadthFirstSearchMaximumCost(j, graph[entrances[i]][j], convertedGraph, exits, i);
                 }
             }
         }
         return peakCapacity;
     }
-    private boolean IsNotTerminal(Node node, int[] terminalNodes)
+    private static boolean IsNotTerminal(Vertex node, int[] terminalNodes)
     {
         boolean result = false;
         if (node != null)
         {
-            for (int i = 0; i < terminalNodes.length && !result; i++)
-            {
-                if(terminalNodes[i] == node.vertex)
+            for (int i = 0; (i < terminalNodes.length) && !result; i++)
+                if (terminalNodes[i] == node.room)
                     result = true;
-            }
         }
         return result;
     }
-    private static int BreadthFirstSearchMaximumCost(int source, int startingCost, Graph graph, int[] terminalNodes)
+    private static int BreadthFirstSearchMaximumCost(int source, int startingCost, Graph graph, int[] terminalNodes, int trueSource)
     {
         int endCost;
-
-        endCost = modifiedBFS(graph, source, startingCost, terminalNodes);
+        endCost = BFSMaxPath(graph, source, startingCost, terminalNodes, trueSource);
         return endCost;
     }
 
     private static Graph Convert2DArrayToGraph(int[][] graph)
     {
-        for(int i = 0; i < graph.length;i+=)
-
+        for(int i = 0; i < graph.length;i++);
+        return new Graph(graph);
     }
 
-    public static int modifiedBFS(Graph g, int src, int k, int[] terminalNodes)
+    public static int BFSMaxPath(Graph graph, int sourceNode, int startingBunnies, int[] terminalNodes, int trueSource)
     {
-        // create a queue for doing BFS
-        Queue<Node> q = new ArrayDeque<>();
+        Queue<Vertex> vertexArrayDeque = new ArrayDeque<>();
 
-        // add source vertex to set and enqueue it
         Set<Integer> vertices = new HashSet<>();
-        vertices.add(0);
-        q.add(new Node(src, 0, vertices));
+        vertices.add(sourceNode);
+        vertices.add(trueSource);
+        vertexArrayDeque.add(new Vertex(sourceNode));
+        int maximumBunniesPossible = startingBunnies;
 
-        // stores maximum cost of a path from the source
-        int maxCost = k;
-
-        // loop till queue is empty
-        Node node;
-        while (!q.isEmpty() && IsNotTerminal(node,terminalNodes))
+        boolean terminal = false;
+        while (!vertexArrayDeque.isEmpty()&& !terminal)
         {
-            // dequeue front node
-            node = q.poll();
+            Vertex node = vertexArrayDeque.poll();
 
-            int v = node.vertex;
-            int cost = node.weight;
-            vertices = new HashSet<>(node.s);
-
-            // if the destination is reached and BFS depth is equal to `m`,
-            // update the minimum cost calculated so far
-            maxCost = Math.min(maxCost, cost);
-
-            // do for every adjacent edge of `v`
-            for (Edge edge: g.adj.get(v))
+            int v = node != null ? node.room : 0;
+            vertices = new HashSet<>(v);
+            for (Edge edge: graph.adjVertices.get(v).edges)
             {
-                // check for a cycle
-                if (!vertices.contains(edge.dest))
+                maximumBunniesPossible = Math.min(maximumBunniesPossible, edge.cost);
+                if (!vertices.contains(edge.leadstoRoom))
                 {
-                    // add current node to the path
-                    Set<Integer> s = new HashSet<>(vertices);
-                    s.add(edge.dest);
-
-                    // push every vertex (discovered or undiscovered) into
-                    // the queue with a cost equal to the
-                    // parent's cost plus the current edge's weight
-                    q.add(new Node(edge.dest, cost + edge.weight, s));
+                    //vertices = new HashSet<>(vertices);
+                    vertices.add(edge.leadstoRoom);
+                    vertexArrayDeque.add(new Vertex(edge.leadstoRoom));
                 }
             }
+            terminal = IsNotTerminal(node,terminalNodes);
         }
 
-        return maxCost;
+        return maximumBunniesPossible;
     }
     static class Graph
     {
-        private Map<Vertex, List<Vertex>> adjVertices;
+        private final Map<Integer, Vertex> adjVertices;
         Graph(int[][] asIntArr)
         {
+            adjVertices = new HashMap<>();
             for(int i = 0; i < asIntArr.length; i++)
             {
-
+                addVertex(i);
+                for(int j = 0; j < asIntArr[i].length; j++)
+                {
+                    if(asIntArr[i][j] != 0)
+                        addEdge(i,j,asIntArr[i][j]);
+                }
             }
         }
         void addVertex(int room)
         {
-            adjVertices.putIfAbsent(new Vertex(room), new ArrayList<>());
+            adjVertices.putIfAbsent(room, new Vertex(room));
         }
-
-        void removeVertex(int room) {
-            Vertex v = new Vertex(room);
-            adjVertices.values().stream().forEach(e -> e.remove(v));
-            adjVertices.remove(new Vertex(room));
-        }
-        void addEdge(int from, int to) {
-            Vertex v1 = new Vertex(from);
-            Vertex v2 = new Vertex(to);
-            adjVertices.get(v1).add(v2);
-        }
-        void removeEdge(int from, int to)
+        void addEdge(int from, int to, int cost)
         {
-            Vertex v1 = new Vertex(from);
-            Vertex v2 = new Vertex(to);
-            List<Vertex> eV1 = adjVertices.get(v1);
-            if (eV1 != null)
-                eV1.remove(v2);
+            adjVertices.get(from).AddEdge(to, cost);
         }
-        List<Vertex> getAdjVertices(int room)
+    }
+    static class Edge
+    {
+        int leadstoRoom;
+        int cost;
+        Edge(int roomNumber, int cost)
         {
-            return adjVertices.get(new Vertex(room));
+            this.leadstoRoom = roomNumber;
+            this.cost = cost;
         }
     }
     static class Vertex
     {
         int room;
+        List<Edge> edges;
         Vertex(int roomNumber)
         {
             this.room = roomNumber;
+            edges = new ArrayList<>();
+        }
+        public void AddEdge(int to, int cost)
+        {
+            edges.add(new Edge(to,cost));
         }
     }
 
