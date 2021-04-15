@@ -6,13 +6,16 @@ public class Solution
     {
         int peakCapacity = 0;
         Graph convertedGraph = Convert2DArrayToGraph(graph);
+        ArrayList<Integer> exitsPossible = new ArrayList<>();
+        for(int i = 0; i < exits.length; i++)
+            exitsPossible.add(exits[i]);
         for(int i = 0; i < entrances.length; i++)
         {
             for(int j = 0; j < graph[entrances[i]].length; j++)
             {
                 if(graph[entrances[i]][j] > 0)
                 {
-                    peakCapacity += BreadthFirstSearchMaximumCost(j, graph[entrances[i]][j], convertedGraph, exits, i);
+                    peakCapacity += BreadthFirstSearchMaximumCost(j, graph[entrances[i]][j], convertedGraph, exitsPossible, i);
                 }
             }
         }
@@ -29,10 +32,12 @@ public class Solution
         }
         return result;
     }
-    private static int BreadthFirstSearchMaximumCost(int source, int startingCost, Graph graph, int[] terminalNodes, int trueSource)
+    private static int BreadthFirstSearchMaximumCost(int source, int startingCost, Graph graph, ArrayList<Integer> terminalNodes, int trueSource)
     {
         int endCost;
-        endCost = BFSMaxPath(graph, source, startingCost, terminalNodes, trueSource);
+        HashSet<Integer> vertices = new HashSet<>();
+        vertices.add(trueSource);
+        endCost = RecursiveMaxPath(graph, source, startingCost, terminalNodes, vertices);
         return endCost;
     }
 
@@ -42,38 +47,24 @@ public class Solution
         return new Graph(graph);
     }
 
-    public static int BFSMaxPath(Graph graph, int sourceNode, int startingBunnies, int[] terminalNodes, int trueSource)
+    public static int RecursiveMaxPath(Graph graph, int sourceNode, int startingBunnies, ArrayList<Integer> terminalNodes, HashSet<Integer> verticiesVisited)
     {
-        Deque<Vertex> vertexArrayDeque = new ArrayDeque<>();
-
-        HashMap<Integer,HashSet<Integer>> vertices = new HashMap<>();
-        vertices.put(sourceNode, new HashSet<>(trueSource));
-        vertexArrayDeque.add(new Vertex(sourceNode));
-        int maximumBunniesPossible = startingBunnies;
-        int maximumEdgeCost = 0;
-        boolean terminal = false;
-        while (!vertexArrayDeque.isEmpty()&& !terminal)
+        if(terminalNodes.contains(sourceNode))
+            return startingBunnies;
+        else
         {
-            Vertex node = vertexArrayDeque.poll();
-
-            int nodeRoom = node != null ? node.room : 0;
-
-            for (Edge edge: graph.adjVertices.get(nodeRoom).edges)
+            int maxOfAllPossibilities = 0;
+            for (Edge edge: graph.adjVertices.get(sourceNode).edges)
             {
-
-                if(vertices.get(nodeRoom) != null && !vertices.get(nodeRoom).contains(edge.leadstoRoom))
+                if(!verticiesVisited.contains(edge.leadstoRoom))
                 {
-                    vertices.get(nodeRoom).add(edge.leadstoRoom);
-                    maximumEdgeCost = Math.max(maximumEdgeCost, edge.cost);
-                    vertexArrayDeque.addLast(new Vertex(edge.leadstoRoom));
+                    int bunniesCapablePassing = Math.min(startingBunnies, edge.cost);
+                    verticiesVisited.add(sourceNode);
+                    maxOfAllPossibilities = Math.max(maxOfAllPossibilities, RecursiveMaxPath(graph, edge.leadstoRoom, bunniesCapablePassing, terminalNodes, verticiesVisited));
                 }
-                else vertices.computeIfAbsent(nodeRoom, k -> new HashSet<>(edge.leadstoRoom));
             }
-            maximumBunniesPossible = Math.min(maximumBunniesPossible, maximumEdgeCost);
-            terminal = IsNotTerminal(node,terminalNodes);
+            return Math.min(maxOfAllPossibilities,startingBunnies);
         }
-
-        return maximumBunniesPossible;
     }
     static class Graph
     {
