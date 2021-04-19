@@ -30,13 +30,14 @@ public class Solution
     private static void AugmentGraphUsingShortestPath(Graph flowGraph, Path shortestPath, int bottleNeckValue)
     {
         Path currentPath = shortestPath;
-        if(shortestPath.next != null && !flowGraph.adjVertices.get(currentPath.roomNumber).GetEdge(currentPath.next.roomNumber).IsNowResidual())
+        if(shortestPath.next != null && flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber) != null)
         {
-            flowGraph.adjVertices.get(currentPath.roomNumber).GetEdge(currentPath.next.roomNumber).Augment(bottleNeckValue);
+            flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber).Augment(bottleNeckValue);
             currentPath = currentPath.next;
-            while (currentPath.next != null && !flowGraph.adjVertices.get(currentPath.roomNumber).GetEdge(currentPath.next.roomNumber).IsNowResidual())
+            while (currentPath.next != null && flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber) != null)
             {
-                flowGraph.adjVertices.get(currentPath.roomNumber).GetEdge(currentPath.next.roomNumber).Augment(bottleNeckValue);
+
+                flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber).Augment(bottleNeckValue);
                 currentPath = currentPath.next;
             }
         }
@@ -224,6 +225,16 @@ public class Solution
             for (Edge edge: edges)
             {
                 if(edge.leadstoRoom == to)
+                    found = edge;
+            }
+            return found;
+        }
+        public Edge GetEdgeNotResidual(int to)
+        {
+            Edge found = null;
+            for (Edge edge: edges)
+            {
+                if(edge.leadstoRoom == to && !edge.IsNowResidual())
                     found = edge;
             }
             return found;
