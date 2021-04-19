@@ -29,14 +29,14 @@ public class Solution
     private static void AugmentGraphUsingShortestPath(Graph flowGraph, Path shortestPath, int bottleNeckValue)
     {
         Path currentPath = shortestPath;
-        if(shortestPath.next != null && flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber) != null)
+        Edge edgeToNextRoom;
+        if(shortestPath.next != null && (edgeToNextRoom = flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber)) != null)
         {
-            flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber).Augment(bottleNeckValue);
+            edgeToNextRoom.Augment(bottleNeckValue);
             currentPath = currentPath.next;
-            while (currentPath.next != null && flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber) != null)
+            while (currentPath.next != null &&(edgeToNextRoom = flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber))  != null)
             {
-
-                flowGraph.adjVertices.get(currentPath.roomNumber).GetEdgeNotResidual(currentPath.next.roomNumber).Augment(bottleNeckValue);
+                edgeToNextRoom.Augment(bottleNeckValue);
                 currentPath = currentPath.next;
             }
         }
@@ -218,16 +218,6 @@ public class Solution
             edges.add(newEdge);
             return newEdge;
         }
-        public Edge GetEdge(int to)
-        {
-            Edge found = null;
-            for (Edge edge: edges)
-            {
-                if(edge.leadstoRoom == to)
-                    found = edge;
-            }
-            return found;
-        }
         public Edge GetEdgeNotResidual(int to)
         {
             Edge found = null;
@@ -256,20 +246,6 @@ public class Solution
                 currentPath = currentPath.next;
             currentPath.next = pathToAdd;
         }
-
-        public boolean Contains(int leadstoRoom)
-        {
-            boolean hasOccurence = false;
-            Path currentPath = this;
-            while(currentPath.next!=null && !hasOccurence)
-            {
-                if(currentPath.next.roomNumber == leadstoRoom)
-                    hasOccurence = true;
-                currentPath = currentPath.next;
-            }
-            return hasOccurence;
-        }
-
         public Path CreateCopy()
         {
             Path currentPath = this;
