@@ -76,13 +76,26 @@ public class Solution
 
     private static Graph ConvertEntrancesExitsIntoFlowGraph(int[]entrances, int[]exits, int[][] graph)
     {
-        int[][] newGraph = IntArrToFlowGraph.CreateNewGraphWithSingularEntranceAndExit(graph);
-        IntArrToFlowGraph.CreateEdgesFromNewEntranceToEntrances(entrances, graph, newGraph);
-        IntArrToFlowGraph.CreateEdgesFromExitsToNewExit(exits, newGraph);
-        IntArrToFlowGraph.CopyOldGraphIntoBodyOfNewGraph(graph, newGraph);
+        int[][] newGraph = new int[graph.length+2][graph.length+2];
+        for(int i = 0; i < entrances.length;i++)
+        {
+            for(int j = 0; j < graph[entrances[i]].length; j++)
+            {
+                if (graph[entrances[i]][j] > 0)
+                    newGraph[0][1 + i] += graph[entrances[i]][j];
+            }
+        }
+
+        for(int i = 0; i < graph.length;i++)
+            System.arraycopy(graph[i], 0, newGraph[1 + i], 1, graph[0].length);
+
+        for(int i = 0; i < exits.length;i++)
+        {
+            newGraph[newGraph.length-1-exits.length+i][newGraph[0].length-1] = Integer.MAX_VALUE;
+
+        }
         return Convert2DArrayToGraph(newGraph);
     }
-
     public static Path BFSForShortestPath(Graph graph, int[] terminalNodes)
     {
         Queue<Vertex> vertexArrayQueue = new ArrayDeque<>();
@@ -270,36 +283,6 @@ public class Solution
                 currentPath = currentPath.next;
             }
             return newPath;
-        }
-    }
-    static class IntArrToFlowGraph
-    {
-        private static void CopyOldGraphIntoBodyOfNewGraph(int[][] graph, int[][] newGraph) {
-            for(int i = 0; i < graph.length; i++)
-                System.arraycopy(graph[i], 0, newGraph[1 + i], 1, graph[0].length);
-        }
-
-        private static void CreateEdgesFromExitsToNewExit(int[] exits, int[][] newGraph) {
-            for(int i = 0; i < exits.length; i++)
-            {
-                newGraph[newGraph.length-1- exits.length+i][newGraph[0].length-1] = Integer.MAX_VALUE;
-
-            }
-        }
-
-        private static void CreateEdgesFromNewEntranceToEntrances(int[] entrances, int[][] graph, int[][] newGraph) {
-            for(int i = 0; i < entrances.length; i++)
-            {
-                for(int j = 0; j < graph[entrances[i]].length; j++)
-                {
-                    if (graph[entrances[i]][j] > 0)
-                        newGraph[0][1 + i] += graph[entrances[i]][j];
-                }
-            }
-        }
-        private static int[][] CreateNewGraphWithSingularEntranceAndExit(int[][] graph)
-        {
-            return new int[graph.length+2][graph.length+2];
         }
     }
 }
